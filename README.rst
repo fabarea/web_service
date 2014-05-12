@@ -26,6 +26,11 @@ Under the hood, the URL is decoded by realURL and corresponds to something like:
 
 The Web Service is meant for retrieving data and is read-only and will consequently not provide PUT, POST, DELETE, PATCH methods.
 
+TODO
+====
+
+* Polish output of ATOM + HTML format. E.g https://codex.wordpress.org/index.php?title=Special:RecentChanges&feed=atom
+* Resolve MM relations
 
 Build API URL
 =============
