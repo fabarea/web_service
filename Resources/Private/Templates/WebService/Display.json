@@ -1,0 +1,2 @@
+{entries -> ws:format.json()}
+{namespace ws=Vanilla\WebService\ViewHelpers}

@@ -1,0 +1,86 @@
+# Plugin configuration
+plugin.tx_webservice {
+	persistence {
+		storagePid = {$plugin.tx_webservice.persistence.storagePid}
+	}
+	view {
+		templateRootPath = {$plugin.tx_webservice.view.templateRootPath}
+		partialRootPath = {$plugin.tx_webservice.view.partialRootPath}
+		layoutRootPath = {$plugin.tx_webservice.view.layoutRootPath}
+	}
+}
+
+
+plugin.tx_webservice {
+	settings {
+
+		# Page Uid where reside the web service.
+		pageUid = 1
+
+		dataTypes {
+			tx_bobst_processes {
+				mapping = bobst-processes
+				defaultFields = email
+			}
+			tx_bobst_business_activities {
+				mapping = bobst-activities
+				#defaultFields = email
+			}
+		}
+
+		# Not used for now...
+		# Meant to have pre-configured data stream
+		#preSets {
+		#	1 {
+		#		dataType = tt_content
+		#		order = tstamp
+		#		direction = DESC
+		#	}
+		#}
+	}
+}
+
+page_1399668486 = PAGE
+page_1399668486 {
+	typeNum = 1399668486
+	config {
+		xhtml_cleaning = 0
+		admPanel = 0
+		disableAllHeaderCode = 1
+		additionalHeaders = Content-type: application/json
+
+		# Configuration if you would like to fix prepended domain.
+		# Otherwise typolink get prepended with current domain.
+		#absRefPrefix = http://domain.tld/
+	}
+	10 = COA_INT
+	10 {
+		10 = USER_INT
+		10 {
+			userFunc = \TYPO3\CMS\Extbase\Core\Bootstrap->run
+			extensionName = WebService
+			pluginName = Pi1
+			switchableControllerActions {
+				WebService {
+					1 = display
+				}
+			}
+		}
+	}
+}
+
+
+[globalVar = GP:tx_webservice_pi1|format = xml]
+	page_1399668486.config.additionalHeaders = Content-type: text/xml
+	#additionalHeaders = Content-type: application/atom+xml
+[end]
+
+[globalVar = GP:tx_webservice_pi1|format = html]
+	page_1399668486.config.additionalHeaders = Content-type: text/html
+[end]
+
+# Configure a cached web sercice
+page_1399668487 = PAGE
+page_1399668487 < page_1399668486
+page_1399668487.10 = COA
+page_1399668487.10.10 = USER

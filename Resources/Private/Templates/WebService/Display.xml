@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/css" href="http://codex.wordpress.org/skins/common/feed.css?207"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+
+	<title>Example Feed</title>
+	<subtitle>A subtitle.</subtitle>
+	<link href="http://example.org/feed/" rel="self"/>
+	<link href="http://example.org/"/>
+	<id>urn:uuid:60a76c80-d399-11d9-b91C-0003939e0af6</id>
+	<updated>2003-12-13T18:30:02Z</updated>
+
+	<f:for each="{entries}" as="entry">
+		<entry xmlns="http://www.w3.org/2005/Atom">
+			<f:for each="{entry}" key="field" as="value">
+				<{field}>{value}</{field}>
+			</f:for>
+
+			<title>Atom-Powered Robots Run Amok</title>
+			<link href="http://example.org/2003/12/13/atom03"/>
+			<link rel="alternate" type="text/html" href="http://example.org/2003/12/13/atom03.html"/>
+			<link rel="edit" href="http://example.org/2003/12/13/atom03/edit"/>
+			<id>urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a</id>
+			<updated>2003-12-13T18:30:02Z</updated>
+			<summary type="html">
+				<f:for each="{entry}" key="field" as="value">
+					{field}: {value}
+				</f:for>
+			</summary>
+			<content type="xhtml">
+				<div xmlns="http://www.w3.org/1999/xhtml">
+					<ul>
+						<f:for each="{entry}" key="field" as="value">
+						<li>{field}: {value}</li>
+						</f:for>
+					</ul>
+				</div>
+			</content>
+			<author>
+				<name>John Doe</name>
+				<email>johndoe@example.com</email>
+			</author>
+		</entry>
+	</f:for>
+
+
+</feed>
