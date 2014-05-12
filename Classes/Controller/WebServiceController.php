@@ -26,6 +26,7 @@ namespace Vanilla\WebService\Controller;
  ***************************************************************/
 use Cobweb\BobstForms\Domain\Model\Request;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use TYPO3\CMS\Vidi\ContentRepositoryFactory;
 use TYPO3\CMS\Vidi\Persistence\Matcher;
@@ -43,20 +44,32 @@ class WebServiceController extends ActionController {
 	 * @param array $matcher
 	 * @return void
 	 */
-	public function displayAction($dataType = '', $identifier = 0, $secondaryDataType = '', array $matcher = array()) {
+	public function displayAction($dataType, $identifier = 0, $secondaryDataType = '', array $matcher = array()) {
 
 		$dataType = $this->resolveDataType($dataType);
 		$secondaryDataType = $this->resolveDataType($secondaryDataType);
 
-		// feedAction?
-		if (empty($dataType)) {
-			return 'No data to be displayed';
+		$matcher = $this->getMatcher();
+
+		// mm_processes
+		$currentDataType = $dataType;
+
+		if (!empty($secondaryDataType)) {
+			$currentDataType = $secondaryDataType;
+
+//			$joinField = TcaService::table($secondaryDataType)->searchJoinField($dataType); # could also be many ->searchJoinFields($dataType);
+//			if (TcaService::table($secondaryDataType)->field($joinField)->hasRelationManyToMany()) {
+//			    $matcher->equals('mm_processes.tx_bobst_products', $identifier);
+				#$matcher->equals($joinField . '.' . $dataType, $identifier);
+//			} else {
+//			    $matcher->equals('tx_bobst_products', $identifier);
+//			}
 		}
 
-		$contentObjects = ContentRepositoryFactory::getInstance($dataType)->findAll();
+		$contentObjects = ContentRepositoryFactory::getInstance($currentDataType)->findBy($matcher);
 
 		$output = array();
-		$labelField = TcaService::table($dataType)->getLabelField();
+		$labelField = TcaService::table($currentDataType)->getLabelField();
 
 		foreach ($contentObjects as $contentObject) {
 			$_record = array();
@@ -70,17 +83,39 @@ class WebServiceController extends ActionController {
 	}
 
 	/**
+	 * Returns a matcher object.
+	 *
 	 * @param string $dataType
+	 * @return \TYPO3\CMS\Vidi\Persistence\Matcher
+	 */
+	public function getMatcher($dataType = '') {
+
+		/** @var $matcher \TYPO3\CMS\Vidi\Persistence\Matcher */
+		$matcher = GeneralUtility::makeInstance('TYPO3\CMS\Vidi\Persistence\Matcher');
+
+		return $matcher;
+	}
+
+	/**
+	 * @param string $dataType
+	 * @throws \Exception
 	 * @return string
 	 */
 	protected function resolveDataType($dataType) {
-		foreach ($this->settings['dataTypes'] as $tableName => $mappingValues) {
-			if ($mappingValues['mapping'] == $dataType) {
-				$dataType = $tableName;
-				break;
+		$resolvedDataType = '';
+		if ($dataType) {
+			foreach ($this->settings['dataTypes'] as $tableName => $mappingValues) {
+				if ($mappingValues['mapping'] == $dataType) {
+					$resolvedDataType = $tableName;
+					break;
+				}
+			}
+
+			if (!$resolvedDataType) {
+				throw new \Exception(sprintf('I could not resolved "%s"', $dataType), 1399883431);
 			}
 		}
-		return $dataType;
+		return $resolvedDataType;
 	}
 
 	/**

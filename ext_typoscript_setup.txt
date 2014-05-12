@@ -22,8 +22,8 @@ plugin.tx_webservice {
 				mapping = bobst-processes
 				defaultFields = email
 			}
-			tx_bobst_business_activities {
-				mapping = bobst-activities
+			tx_bobst_products {
+				mapping = bobst-products
 				#defaultFields = email
 			}
 		}
