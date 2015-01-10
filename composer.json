@@ -1,0 +1,12 @@
+{
+	"name": "fab/web-service",
+	"type": "typo3-cms-extension",
+	"description": "Web Service to fetch data in a flexible way. Possible output format: JSON, Atom, HTML. The Web Service is meant for retrieving data only.",
+	"homepage": "https://github.com/fudriot/web_service",
+	"license": ["GPL-2.0+"],
+	"keywords": ["TYPO3 CMS", "web service"],
+	"support": {
+		"issues": "https://github.com/fudriot/web_service/issues"
+	},
+	"version": "1.0.0-dev"
+}
