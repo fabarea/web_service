@@ -76,14 +76,16 @@ RealURL is a key component enabling to nicely encode the URLs and speak REST.
 		// Fixed post variables
 		'fixedPostVars' => array(
 			'_DEFAULT' => array(
-				array(
-					'type' => 'user',
-					'userFunc' => 'EXT:web_service/Classes/UserFunction/RealUrl.php:Vanilla\\WebService\\UserFunction\\RealUrl->getDataType',
-					'GETvar' => 'tx_webservice_pi1[dataType]',
-				),
-				array(
-					'GETvar' => 'tx_webservice_pi1[identifier]',
-					'optional' => TRUE,
+				'data' => array(
+					array(
+						'type' => 'user',
+						'userFunc' => 'EXT:web_service/Classes/UserFunction/RealUrl.php:Vanilla\\WebService\\UserFunction\\RealUrl->getDataType',
+						'GETvar' => 'tx_webservice_pi1[dataType]',
+					),
+					array(
+						'GETvar' => 'tx_webservice_pi1[identifier]',
+						'optional' => TRUE,
+					),
 				),
 			),
 		),
