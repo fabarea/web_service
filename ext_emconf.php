@@ -10,27 +10,21 @@
 
 $EM_CONF[$_EXTKEY] = array (
   'title' => 'Web Service to fetch data',
-  'description' => 'Web Service to fetch data in a flexible way. Possible output format: JSON, Atom, HTML. The Web Service is meant for retrieving data and is read-only.',
+  'description' => 'Web Service to fetch data in a flexible way. Possible output format: JSON, Atom, HTML. The Web Service is meant for retrieving data only.',
   'category' => 'fe',
   'author' => 'Fabien Udriot',
   'author_email' => 'fabien.udriot@typo3.org',
-  'shy' => '',
-  'priority' => '',
-  'module' => '',
   'state' => 'beta',
-  'internal' => '',
   'uploadfolder' => '0',
   'createDirs' => '',
-  'modify_tables' => '',
   'clearCacheOnLoad' => 0,
-  'lockType' => '',
   'version' => '0.1.0',
   'constraints' =>
   array (
     'depends' =>
     array (
-      'vidi' => '',
       'typo3' => '6.2.0-6.2.99',
+      'vidi' => '',
     ),
     'conflicts' =>
     array (
