@@ -13,10 +13,3 @@ plugin.tx_webservice {
 		storagePid =
 	}
 }
-
-plugin.tx_webservice {
-	settings {
-		# cat=plugin.tx_webservice/a; type=string; label=Name of the sender
-		# key = John Doe
-	}
-}
