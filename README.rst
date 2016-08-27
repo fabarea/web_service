@@ -6,22 +6,21 @@ This is an extension for TYPO3 CMS aiming to query data in a flexible way. Possi
 The URLs given as example are encoded.
 
 
-	# Return all processes
-	http://domain.tld/content/processes
+	# Return all FE users
+	http://domain.tld/content/users
 
 	# Return the process with id "1"
-	http://domain.tld/content/processes/1
+	http://domain.tld/content/users/1
 
 	# Return the products related to process "1"
-	http://domain.tld/content/processes/1/products
+	http://domain.tld/content/users/1/groups
 
 	# Configure the output format. Possible values: xml, html, json (default)
 	http://domain.tld/content/process/1?format=xml
 
-
 Under the hood, the URL is decoded by realURL and corresponds to something like::
 
-	http://domain.tld/?type=1399668486&tx_webservice_pi1[dataType]=tx_domain_model_processes
+	http://domain.tld/index.php?eID=web_service&route=users/1;
 
 
 The Web Service is meant for retrieving data and is read-only and will consequently not provide PUT, POST, DELETE, PATCH methods.
@@ -49,53 +48,6 @@ and configured.
 	{ws:uri.api(dataType: 'pages', id: 123, secondaryDataType: 'tt_content')}
 
 	-> http://domain.tld/content/pages/123/content
-
-
-
-RealURL configuration
-=====================
-
-RealURL is a key component enabling to nicely encode the URLs and speak REST.
-
-::
-
-
-		// Pre variables
-		'preVars' => array(
-
-			array(
-				'GETvar' => 'type',
-				'valueMap' => array(
-					'api' => 1399668486,
-				),
-				'noMatch' => 'bypass',
-			),
-
-		),
-
-		// Fixed post variables
-		'fixedPostVars' => array(
-			'_DEFAULT' => array(
-				'data' => array(
-					array(
-						'type' => 'user',
-						'userFunc' => 'EXT:web_service/Classes/UserFunction/RealUrl.php:Vanilla\\WebService\\UserFunction\\RealUrl->getDataType',
-						'GETvar' => 'tx_webservice_pi1[dataType]',
-					),
-					array(
-						'GETvar' => 'tx_webservice_pi1[identifier]',
-						'optional' => TRUE,
-					),
-				),
-			),
-		),
-
-
-
-Cachable request
-================
-
-To be able to cache the request make use of type = 1399668487 (experimental feature)
 
 
 Use Case

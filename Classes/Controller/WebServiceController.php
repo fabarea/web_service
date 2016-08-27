@@ -9,112 +9,119 @@ namespace Fab\WebService\Controller;
  */
 
 use Fab\Vidi\Domain\Repository\ContentRepositoryFactory;
-use RuntimeException;
-use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
+use Fab\Vidi\Persistence\Order;
+use Fab\Vidi\Tca\Tca;
+use Fab\WebService\Resolver\Settings;
+use Fab\WebService\Resolver\SettingsResolver;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use Fab\Vidi\Persistence\Matcher;
-use Fab\Vidi\Tca\Tca;
 use TYPO3\CMS\Extbase\SignalSlot\Dispatcher;
 
 /**
- * Controller class for handling action related to a product.
+ * Class WebServiceController
  */
 class WebServiceController extends ActionController
 {
 
     /**
-     * @param string $dataType
-     * @param int $identifier
-     * @param string $secondaryDataType
-     * @param array $matcher
-     * @return void
+     * @param string $route
+     * @throws \Fab\Vidi\Exception\InvalidKeyInArrayException
+     * @throws \InvalidArgumentException
+     * @throws \RuntimeException
+     * @throws \Fab\Vidi\Exception\NotExistingClassException
+     * @throws \TYPO3\CMS\Extbase\SignalSlot\Exception\InvalidSlotException
+     * @throws \TYPO3\CMS\Extbase\SignalSlot\Exception\InvalidSlotReturnException
      */
-    public function displayAction($dataType = 'fe_users', $identifier = 0, $secondaryDataType = '', array $matcher = array())
+    public function listAction($route)
     {
 
-        $dataType = $this->resolveDataType($dataType);
-        $secondaryDataType = $this->resolveDataType($secondaryDataType);
+        $settings = $this->getSettingsResolver()->resolve($route);
 
-        $matcher = $this->getMatcher();
+        if ($settings->getContentType()) {
 
-        // mm_processes
-        $currentDataType = $dataType;
+            $matcher = $this->getMatcher($settings);
+            $order = $this->getOrder($settings);
+            if ($settings->getManyOrOne() === Settings::MANY) {
+                $objects = ContentRepositoryFactory::getInstance($settings->getContentType())->findBy($matcher, $order, $settings->getLimit());
+            } else {
+                if ($settings->getContentIdentifier() === 0) {
+                    $message = sprintf('I could find a valid identifier "%s"', $settings->getContentIdentifier());
+                    throw new \RuntimeException($message, 1472294542);
+                }
+                $matcher->equals('uid', $settings->getContentIdentifier());
+                $objects = ContentRepositoryFactory::getInstance($settings->getContentType())->findOneBy($matcher);
+            }
 
-        if (!empty($secondaryDataType)) {
-            $currentDataType = $secondaryDataType;
-
-//			$joinField = Tca::table($secondaryDataType)->searchJoinField($dataType); # could also be many ->searchJoinFields($dataType);
-//			if (Tca::table($secondaryDataType)->field($joinField)->hasRelationManyToMany()) {
-//			    $matcher->equals('mm_processes.tx_bobst_products', $identifier);
-            #$matcher->equals($joinField . '.' . $dataType, $identifier);
-//			} else {
-//			    $matcher->equals('tx_bobst_products', $identifier);
-//			}
-        }
-        $contentObjects = ContentRepositoryFactory::getInstance($currentDataType)->findBy($matcher);
-
-        $output = array();
-        $labelField = Tca::table($currentDataType)->getLabelField();
-
-        foreach ($contentObjects as $contentObject) {
-            $_record = array();
-            $_record['uid'] = $contentObject['uid'];
-            $_record[$labelField] = $contentObject[$labelField];
-            $output[] = $_record;
+            // Early return
+            if (!$objects) {
+                return;
+            }
+            $this->view->assign('settings', $settings);
+            $this->view->assign('objects', $objects);
+            $this->view->assign('response', $this->controllerContext->getResponse());
+        } else {
+            $message = sprintf('I could find a valid content type for segment "%s"', $settings->getRouteSegments()[0]);
+            throw new \RuntimeException($message, 1472294541);
         }
 
-        $this->view->assign('entries', $output);
-        $this->view->setTemplatePathAndFilename($this->getTemplatePathAndFileName());
+        $templatePathAndFilename = GeneralUtility::getFileAbsFileName('EXT:web_service/Resources/Private/Templates/WebService/List.json');
+        $this->view->setTemplatePathAndFilename($templatePathAndFilename);
     }
 
     /**
-     * Returns a matcher object.
-     *
-     * @param string $dataType
+     * @param Settings $settings
      * @return Matcher
+     * @throws \TYPO3\CMS\Extbase\SignalSlot\Exception\InvalidSlotReturnException
+     * @throws \TYPO3\CMS\Extbase\SignalSlot\Exception\InvalidSlotException
      * @throws \InvalidArgumentException
      */
-    public function getMatcher($dataType = '')
+    public function getMatcher(Settings $settings)
     {
 
         /** @var $matcher Matcher */
-        $matcher = GeneralUtility::makeInstance(Matcher::class);
+        $matcher = GeneralUtility::makeInstance(Matcher::class, $settings->getContentType());
+
+        // Trigger signal for post processing Order Object.
+        $this->emitPostProcessMatcherSignal($matcher);
 
         return $matcher;
     }
 
     /**
-     * @param string $dataType
-     * @return string
-     * @throws \RuntimeException
+     * @param Settings $settings
+     * @return Order
+     * @throws \Fab\Vidi\Exception\NotExistingClassException
+     * @throws \InvalidArgumentException
      */
-    protected function resolveDataType($dataType)
+    public function getOrder(Settings $settings)
     {
-        $resolvedDataType = '';
-        if ($dataType) {
-            foreach ($this->settings['dataTypes'] as $tableName => $mappingValues) {
-                if ($mappingValues['mapping'] == $dataType) {
-                    $resolvedDataType = $tableName;
-                    break;
-                }
-            }
-
-            if (!$resolvedDataType) {
-                throw new RuntimeException(sprintf('I could not resolved "%s"', $dataType), 1399883431);
-            }
+        $orderings = $settings->getOrderings();
+        if (!$orderings) {
+            $orderings = Tca::table($settings->getContentType())->getDefaultOrderings();
         }
-        return $resolvedDataType;
+
+        return GeneralUtility::makeInstance(Order::class, $orderings);
     }
 
     /**
-     * @return string
-     * @throws \BadFunctionCallException
+     * @return SettingsResolver
+     * @throws \InvalidArgumentException
      */
-    protected function getTemplatePathAndFileName()
+    protected function getSettingsResolver()
     {
-        return ExtensionManagementUtility::extPath('web_service') . 'Resources/Private/Templates/WebService/Display.json';
+        return GeneralUtility::makeInstance(SettingsResolver::class, $this->settings);
     }
+
+
+//    /**
+//     * @return string
+//     * @throws \BadFunctionCallException
+//     */
+//    protected function getTemplatePathAndFileName()
+//    {
+//        return ExtensionManagementUtility::extPath('web_service') . 'Resources/Private/Templates/WebService/Display.json';
+//    }
 
     /**
      * Signal that is called for post processing matcher
@@ -124,9 +131,9 @@ class WebServiceController extends ActionController
      * @throws \TYPO3\CMS\Extbase\SignalSlot\Exception\InvalidSlotException
      * @throws \TYPO3\CMS\Extbase\SignalSlot\Exception\InvalidSlotReturnException
      */
-    protected function emitPostProcessRequestSignal(Matcher $matcher)
+    protected function emitPostProcessMatcherSignal(Matcher $matcher)
     {
-        $this->getSignalSlotDispatcher()->dispatch('Fab\WebService\Controller\WebServiceController', 'postProcessMatcher', array($matcher));
+        $this->getSignalSlotDispatcher()->dispatch(self::class, 'postProcessMatcher', array($matcher));
     }
 
     /**

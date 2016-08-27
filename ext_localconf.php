@@ -3,27 +3,27 @@ if (!defined('TYPO3_MODE')) {
     die ('Access denied.');
 }
 
-# No cachable plugin
+//# No cachable plugin
 \TYPO3\CMS\Extbase\Utility\ExtensionUtility::configurePlugin(
-    'web_service',
+    'Fab.web_service',
     'Pi1',
     array(
-        'WebService' => 'display',
+        'WebService' => 'list',
     ),
     // non-cacheable actions
     array(
-        'WebService' => 'display',
+        'WebService' => 'list',
     )
 );
-
-# Cachable plugin
-\TYPO3\CMS\Extbase\Utility\ExtensionUtility::configurePlugin(
-    'web_service',
-    'Pi2',
-    array(
-        'WebService' => 'display',
-    )
-);
+//
+//# Cachable plugin
+//\TYPO3\CMS\Extbase\Utility\ExtensionUtility::configurePlugin(
+//    'web_service',
+//    'Pi2',
+//    array(
+//        'WebService' => 'display',
+//    )
+//);
 
 // Define whether to automatically load TS.
 $configuration = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['web_service']);
@@ -41,3 +41,6 @@ if (false === isset($configuration['autoload_typoscript']) || true === (bool)$co
         '<INCLUDE_TYPOSCRIPT: source="FILE:EXT:web_service/Configuration/TypoScript/setup.txt">'
     );
 }
+
+// Register routing service
+$GLOBALS['TYPO3_CONF_VARS']['FE']['eID_include']['web_service'] = 'EXT:web_service/Classes/Controller/RoutingController.php';

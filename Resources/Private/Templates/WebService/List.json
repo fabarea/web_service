@@ -1,0 +1,2 @@
+{ws:result.toJson()}
+{namespace ws=Fab\WebService\ViewHelpers}

@@ -1,0 +1,28 @@
+<f:form action="update" controller="Content" id="form-edit" method="post"
+        arguments="{fieldNameAndPath: '{fieldNameAndPath}', matches: '{matches}', hasRecursiveSelection: '{hasRecursiveSelection}'}">
+
+	<!-- additional parameters -->
+	<f:form.hidden name="dataType" value="{dataType}"/>
+	<input type="hidden" name="order[0][column]" value="{v:gp(argument: 'order|0|column')}"/>
+	<input type="hidden" name="order[0][dir]" value="{v:gp(argument: 'order|0|dir')}"/>
+	<input type="hidden" name="search[value]" value="{v:gp(argument: 'search|value')}"/>
+
+	<f:if condition="{numberOfObjects} > 300">
+		<div class="alert alert-warning">
+			<strong>
+				<f:translate key="attention"/>
+			</strong>
+			<f:translate key="editing_many_rows_takes_time"/>
+		</div>
+	</f:if>
+
+	<f:render section="{fieldType}" partial="Edit/{fieldType}" arguments="{_all}"/>
+
+	<!-- HIDDEN SUBMIT BUTTON -->
+	<div style="visibility: hidden; height: 1px">
+		<input type="submit" >
+		<span id="numberOfObjects">{numberOfObjects}</span>
+	</div>
+
+</f:form>
+{namespace v=Fab\Vidi\ViewHelpers}

@@ -1,0 +1,2 @@
+{v:result.toXls()}
+{namespace v=Fab\Vidi\ViewHelpers}
