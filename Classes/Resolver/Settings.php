@@ -57,6 +57,11 @@ class Settings
     protected $limit = 0;
 
     /**
+     * @var string
+     */
+    protected $format = 'json';
+
+    /**
      * @return string
      */
     public function getContentType()
@@ -169,6 +174,14 @@ class Settings
     public function setRouteSegments($routeSegments)
     {
         $this->routeSegments = $routeSegments;
+
+        $routeSize = count($this->routeSegments);
+
+        // Detect the format
+        if (preg_match('/([\w]+)\.(atom|csv|html|json|xml)/', $this->routeSegments[$routeSize - 1], $matches)) {
+            $this->format = $matches[2];
+            $this->routeSegments[$routeSize - 1] = $matches[1];
+        }
         return $this;
     }
 
@@ -196,6 +209,40 @@ class Settings
     {
         $this->limit = $limit;
         return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getFormat()
+    {
+        return $this->format;
+    }
+
+    /**
+     * @param string $format
+     * @return $this
+     */
+    public function setFormat($format)
+    {
+        $this->format = $format;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getLastRouteSegment()
+    {
+        return array_pop($this->routeSegments);
+    }
+
+    /**
+     * @return string
+     */
+    public function getFistRouteSegment()
+    {
+        return array_shift($this->routeSegments);
     }
 
 }

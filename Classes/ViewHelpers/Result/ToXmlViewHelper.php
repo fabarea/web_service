@@ -8,125 +8,87 @@ namespace Fab\WebService\ViewHelpers\Result;
  * LICENSE.md file that was distributed with this source code.
  */
 
-use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Fluid\Core\ViewHelper\Exception\InvalidVariableException;
 
 /**
- * View helper for rendering an XML export request.
+ * View helper for rendering an XML response.
  */
 class ToXmlViewHelper extends AbstractToFormatViewHelper
 {
 
     /**
-     * Render an XML export.
-     *
-     * @return boolean
+     * @return string
+     * @throws \UnexpectedValueException
+     * @throws \Fab\Vidi\Exception\NotExistingClassException
+     * @throws InvalidVariableException
+     * @throws \InvalidArgumentException
      */
     public function render()
     {
+        $items = $this->getItems();
+        $output = sprintf(
+            '<?xml version="1.0"?>
+<items>
+    %s
+</items>',
+            $this->renderEntries($items)
+        );
 
-        $objects = $this->templateVariableContainer->get('objects');
-
-        // Make sure we have something to process...
-        if (!empty($objects)) {
-
-            // Initialization step.
-            $this->initializeEnvironment($objects);
-            $this->exportFileNameAndPath .= '.xml'; // add extension to the file.
-
-            // Write the exported data to a XML file.
-            $this->writeXmlFile($objects);
-
-            // We must generate a zip archive since there are files included.
-            if ($this->hasCollectedFiles()) {
-
-                $this->writeZipFile();
-                $this->sendZipHttpHeaders();
-
-                readfile($this->zipFileNameAndPath);
-            } else {
-                $this->sendXmlHttpHeaders();
-                readfile($this->exportFileNameAndPath);
-            }
-
-            GeneralUtility::rmdir($this->temporaryDirectory, TRUE);
-        }
+        $this->setHttpHeaders();
+        return $output;
     }
 
     /**
-     * Write the XML file to a temporary location.
-     *
-     * @param array $objects
-     * @return void
-     */
-    protected function writeXmlFile(array $objects)
-    {
-
-        // Get first object of $objects to check whether it contains possible files to include.
-        /** @var \Fab\Vidi\Domain\Model\Content $object */
-        $object = reset($objects);
-        $this->checkWhetherObjectMayIncludeFiles($object);
-
-        $items = array();
-        foreach ($objects as $object) {
-            if ($this->hasFileFields()) {
-                $this->collectFiles($object);
-            }
-            $items[] = $object->toValues();
-        }
-
-        $xml = new \SimpleXMLElement('<items/>');
-        $xml = $this->arrayToXml($items, $xml);
-        file_put_contents($this->exportFileNameAndPath, $this->formatXml($xml->asXML()));
-    }
-
-    /*
-     * Convert an array to xml
-     *
-     * @return \SimpleXMLElement
-     */
-    protected function arrayToXml($array, \SimpleXMLElement $xml)
-    {
-        foreach ($array as $key => $value) {
-            if (is_array($value)) {
-                $key = is_numeric($key) ? 'item' : $key;
-                $subNode = $xml->addChild($key);
-                $this->arrayToXml($value, $subNode);
-            } else {
-                $key = is_numeric($key) ? 'item' : $key;
-                $xml->addChild($key, "$value");
-            }
-        }
-        return $xml;
-    }
-
-    /*
-     * Format the XML so that is looks human friendly.
-     *
-     * @param string $xml
+     * @param array $items
      * @return string
      */
-    protected function formatXml($xml)
+    protected function renderEntries(array $items)
     {
-        $dom = new \DOMDocument("1.0");
-        $dom->preserveWhiteSpace = false;
-        $dom->formatOutput = true;
-        $dom->loadXML($xml);
-        return $dom->saveXML();
+
+        $renderedEntries = [];
+        foreach ($items as $item) {
+            $renderedEntries[] = sprintf(
+                '
+    <item>
+        %s
+    </item>',
+                $this->renderItem($item)
+            );
+        }
+
+        return implode("\n", $renderedEntries);
+    }
+
+    /**
+     * @param array $item
+     * @return array
+     */
+    protected function renderItem(array $item)
+    {
+
+        $formattedItem = [];
+        foreach ($item as $key => $value) {
+            $formattedItem[] = sprintf(
+                '<%s>%s<%s>',
+                $key,
+                $value,
+                $key
+            );
+        }
+
+        return implode("\n        ", $formattedItem);
     }
 
     /**
      * @return void
+     * @throws InvalidVariableException
+     * @throws \InvalidArgumentException
      */
-    protected function sendXmlHttpHeaders()
+    protected function setHttpHeaders()
     {
-
         /** @var \TYPO3\CMS\Extbase\Mvc\Web\Response $response */
         $response = $this->templateVariableContainer->get('response');
-        $response->setHeader('Content-Type', 'application/xml');
-        $response->setHeader('Content-Disposition', 'attachment; filename="' . basename($this->exportFileNameAndPath) . '"');
-        $response->setHeader('Content-Length', filesize($this->exportFileNameAndPath));
-        $response->setHeader('Content-Description', 'File Transfer');
-
+        $response->setHeader('Content-Type', 'application/rss+xml');
         $response->sendHeaders();
     }
 

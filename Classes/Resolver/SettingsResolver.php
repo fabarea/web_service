@@ -18,15 +18,18 @@ class SettingsResolver
     /**
      * @var array
      */
-    protected $mappings = [];
+    protected $tsSettings = [];
 
     /**
      * @param array $settings
+     * @throws \RuntimeException
      */
     public function __construct(array $settings)
     {
         if (array_key_exists('mappings', $settings) && is_array($settings['mappings'])) {
-            $this->mappings = $settings['mappings'];
+            $this->typoscript = $settings;
+        } else {
+            throw new \RuntimeException('Mapping configuration missing. Make sure the TypoScript settings is correctly loaded for the web service', 1472451633);
         }
     }
 
@@ -42,10 +45,10 @@ class SettingsResolver
         $settings = GeneralUtility::makeInstance(Settings::class);
         $settings->setRouteSegments(GeneralUtility::trimExplode('/', $route));
 
-        $aliasDataType = $settings->getRouteSegments()[0];
+        $aliasDataType = $settings->getFistRouteSegment();
 
-        if (array_key_exists($aliasDataType, $this->mappings)) {
-            $mappings = $this->mappings[$aliasDataType];
+        if (array_key_exists($aliasDataType, $this->typoscript['mappings'])) {
+            $mappings = $this->typoscript['mappings'][$aliasDataType];
 
             if (array_key_exists('tableName', $mappings)) {
                 $settings->setContentType((string)$mappings['tableName']);
@@ -63,7 +66,6 @@ class SettingsResolver
                 $settings->setLimit((int)$mappings['limit']);
             }
 
-
             if ($settings->countRouteSegments() === 2) {
                 $settings->setManyOrOne(Settings::ONE);
             } else {
@@ -74,6 +76,17 @@ class SettingsResolver
                 $fieldList = $mappings[$settings->getManyOrOne()]['fields'];
                 $settings->setFields(GeneralUtility::trimExplode(',', $fieldList, true));
             }
+
+
+            // Override specific configuration for format output (atom, csv, ...)
+            if (array_key_exists($settings->getFormat(), $this->typoscript)) {
+                $specific = $this->typoscript[$settings->getFormat()];
+
+                if (array_key_exists('limit', $specific)) {
+                    $settings->setLimit((int)$specific['limit']);
+                }
+            }
+
         }
 
         return $settings;

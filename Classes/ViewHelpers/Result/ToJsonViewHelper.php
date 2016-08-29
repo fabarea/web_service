@@ -8,15 +8,12 @@ namespace Fab\WebService\ViewHelpers\Result;
  * LICENSE.md file that was distributed with this source code.
  */
 
-use Fab\WebService\Resolver\ContentResolver;
 use Fab\WebService\Resolver\Settings;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Fluid\Core\ViewHelper\AbstractViewHelper;
 
 /**
  * View helper for rendering a JSON response.
  */
-class ToJsonViewHelper extends AbstractViewHelper
+class ToJsonViewHelper extends AbstractToFormatViewHelper
 {
 
     /**
@@ -56,18 +53,6 @@ class ToJsonViewHelper extends AbstractViewHelper
         $response = $this->templateVariableContainer->get('response');
         $response->setHeader('Content-Type', 'application/json');
         $response->sendHeaders();
-    }
-
-    /**
-     * @return ContentResolver
-     * @throws \TYPO3\CMS\Fluid\Core\ViewHelper\Exception\InvalidVariableException
-     * @throws \InvalidArgumentException
-     */
-    protected function getContentResolver()
-    {
-
-        $settings = $this->templateVariableContainer->get('settings');
-        return GeneralUtility::makeInstance(ContentResolver::class, $settings);
     }
 
 }

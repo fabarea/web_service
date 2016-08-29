@@ -8,22 +8,13 @@ if (!defined('TYPO3_MODE')) {
     'Fab.web_service',
     'Pi1',
     array(
-        'WebService' => 'list',
+        'WebService' => 'output',
     ),
     // non-cacheable actions
     array(
-        'WebService' => 'list',
+        'WebService' => 'output',
     )
 );
-//
-//# Cachable plugin
-//\TYPO3\CMS\Extbase\Utility\ExtensionUtility::configurePlugin(
-//    'web_service',
-//    'Pi2',
-//    array(
-//        'WebService' => 'display',
-//    )
-//);
 
 // Define whether to automatically load TS.
 $configuration = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['web_service']);

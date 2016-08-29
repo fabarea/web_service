@@ -1,0 +1,2 @@
+{v:result.toCsv()}
+{namespace v=Fab\WebService\ViewHelpers}

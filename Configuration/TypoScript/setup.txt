@@ -13,6 +13,11 @@ plugin.tx_webservice {
 
 plugin.tx_webservice {
     settings {
+
+        atom {
+            limit = 10
+        }
+
         mappings {
             users {
                 tableName = fe_users

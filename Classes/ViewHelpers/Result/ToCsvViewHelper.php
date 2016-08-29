@@ -8,6 +8,7 @@ namespace Fab\WebService\ViewHelpers\Result;
  * LICENSE.md file that was distributed with this source code.
  */
 
+use Fab\WebService\Resolver\Settings;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
@@ -20,72 +21,49 @@ class ToCsvViewHelper extends AbstractToFormatViewHelper
      * Render a CSV export request.
      *
      * @return boolean
+     * @throws \TYPO3\CMS\Fluid\Core\ViewHelper\Exception\InvalidVariableException
+     * @throws \InvalidArgumentException
+     * @throws \Fab\Vidi\Exception\NotExistingClassException
      */
     public function render()
     {
+        $items = $this->getItems();
 
-        $objects = $this->templateVariableContainer->get('objects');
+        // Initialization step.
+        $this->initializeEnvironment();
+        $this->exportFileNameAndPath .= '.csv'; // add extension to the file.
 
-        // Make sure we have something to process...
-        if (!empty($objects)) {
+        // Write the exported data to a CSV file.
+        $this->writeCsvFile($items);
 
-            // Initialization step.
-            $this->initializeEnvironment($objects);
-            $this->exportFileNameAndPath .= '.csv'; // add extension to the file.
+        $this->sendCsvHttpHeaders();
+        readfile($this->exportFileNameAndPath);
 
-            // Write the exported data to a CSV file.
-            $this->writeCsvFile($objects);
-
-            // We must generate a zip archive since there are files included.
-            if ($this->hasCollectedFiles()) {
-
-                $this->writeZipFile();
-                $this->sendZipHttpHeaders();
-
-                readfile($this->zipFileNameAndPath);
-            } else {
-                $this->sendCsvHttpHeaders();
-                readfile($this->exportFileNameAndPath);
-            }
-
-            GeneralUtility::rmdir($this->temporaryDirectory, TRUE);
-        }
+        // Clean up step
+        GeneralUtility::rmdir($this->temporaryDirectory, TRUE);
     }
 
     /**
      * Write the CSV file to a temporary location.
      *
-     * @param array $objects
+     * @param array $items
      * @return void
      */
-    protected function writeCsvFile(array $objects)
+    protected function writeCsvFile(array $items)
     {
 
         // Create a file pointer
         $output = fopen($this->exportFileNameAndPath, 'w');
 
+        /** @var Settings $settings */
+        $settings = $this->templateVariableContainer->get('settings');
+
         // Handle CSV header, get the first object and get the list of fields.
-        /** @var \Fab\Vidi\Domain\Model\Content $object */
-        $object = reset($objects);
-        fputcsv($output, $object->toFields());
-        $this->checkWhetherObjectMayIncludeFiles($object);
+        fputcsv($output, $settings->getFields());
 
-        foreach ($objects as $object) {
-            if ($this->hasFileFields()) {
-                $this->collectFiles($object);
-            }
+        foreach ($items as $item) {
 
-            // Make sure we have a flat array of values for the CSV purpose.
-            $flattenValues = array();
-            foreach ($object->toValues() as $fieldName => $value) {
-                if (is_array($value)) {
-                    $flattenValues[$fieldName] = implode(', ', $value);
-                } else {
-                    $flattenValues[$fieldName] = str_replace("\n", "\r", $value); // for Excel purpose.
-                }
-            }
-
-            fputcsv($output, $flattenValues);
+            fputcsv($output, $item);
         }
 
         // close file handler
@@ -94,6 +72,7 @@ class ToCsvViewHelper extends AbstractToFormatViewHelper
 
     /**
      * @return void
+     * @throws \InvalidArgumentException
      */
     protected function sendCsvHttpHeaders()
     {
@@ -106,6 +85,34 @@ class ToCsvViewHelper extends AbstractToFormatViewHelper
         $response->setHeader('Content-Description', 'File Transfer');
 
         $response->sendHeaders();
+    }
+
+    /**
+     * @var string
+     */
+    protected $exportFileNameAndPath;
+
+    /**
+     * @var string
+     */
+    protected $temporaryDirectory;
+
+    /**
+     * Initialize some properties
+     *
+     * @return void
+     * @throws \TYPO3\CMS\Fluid\Core\ViewHelper\Exception\InvalidVariableException
+     */
+    protected function initializeEnvironment()
+    {
+        /** @var Settings $settings */
+        $settings = $this->templateVariableContainer->get('settings');
+
+        $this->temporaryDirectory = PATH_site . 'typo3temp/' . uniqid('web_service_', true) . '/';
+        GeneralUtility::mkdir($this->temporaryDirectory);
+
+        // Compute file name and path variable
+        $this->exportFileNameAndPath = $this->temporaryDirectory . $settings->getContentType() . '-' . date($GLOBALS['TYPO3_CONF_VARS']['SYS']['ddmmyy']);
     }
 
 }

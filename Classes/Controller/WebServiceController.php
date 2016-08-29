@@ -33,7 +33,7 @@ class WebServiceController extends ActionController
      * @throws \TYPO3\CMS\Extbase\SignalSlot\Exception\InvalidSlotException
      * @throws \TYPO3\CMS\Extbase\SignalSlot\Exception\InvalidSlotReturnException
      */
-    public function listAction($route)
+    public function outputAction($route)
     {
 
         $settings = $this->getSettingsResolver()->resolve($route);
@@ -65,7 +65,8 @@ class WebServiceController extends ActionController
             throw new \RuntimeException($message, 1472294541);
         }
 
-        $templatePathAndFilename = GeneralUtility::getFileAbsFileName('EXT:web_service/Resources/Private/Templates/WebService/List.json');
+        $fileNameAndPath = 'EXT:web_service/Resources/Private/Templates/WebService/Output.' . $settings->getFormat();
+        $templatePathAndFilename = GeneralUtility::getFileAbsFileName($fileNameAndPath);
         $this->view->setTemplatePathAndFilename($templatePathAndFilename);
     }
 
@@ -112,16 +113,6 @@ class WebServiceController extends ActionController
     {
         return GeneralUtility::makeInstance(SettingsResolver::class, $this->settings);
     }
-
-
-//    /**
-//     * @return string
-//     * @throws \BadFunctionCallException
-//     */
-//    protected function getTemplatePathAndFileName()
-//    {
-//        return ExtensionManagementUtility::extPath('web_service') . 'Resources/Private/Templates/WebService/Display.json';
-//    }
 
     /**
      * Signal that is called for post processing matcher
