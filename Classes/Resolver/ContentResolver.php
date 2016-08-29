@@ -78,6 +78,10 @@ class ContentResolver
         if (!$fields) {
             $fields = Tca::table($this->settings->getContentType())->getFields();
             $fields[] = 'uid';
+
+            if (Tca::table($this->settings->getContentType())->getTimeModificationField()) {
+                $fields[] = 'tstamp';
+            }
         }
         return $fields;
     }

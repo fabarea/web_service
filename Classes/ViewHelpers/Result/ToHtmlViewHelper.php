@@ -90,7 +90,7 @@ class ToHtmlViewHelper extends AbstractToFormatViewHelper
 
     /**
      * @param array $entry
-     * @return array
+     * @return string
      */
     protected function renderEntry(array $entry)
     {

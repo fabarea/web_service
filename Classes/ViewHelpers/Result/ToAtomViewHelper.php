@@ -30,20 +30,20 @@ class ToAtomViewHelper extends AbstractToFormatViewHelper
         /** @var Settings $settings */
         $settings = $this->templateVariableContainer->get('settings');
         $entries = $this->getItems();
-        $contentType = md5($settings->getContentType());
         $output = sprintf(
             '<?xml version="1.0"?>
-<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+<feed xmlns="http://www.w3.org/2005/Atom">
 
     <title>%s</title>
-    <link href="%s"/>
-    <id>urn:uuid:60a76c80-d399-11d9-b91C-%s</id>
+    <link rel="self" type="application/atom+xml" href="%s" />
+    <id>%s</id>
     <updated>%s</updated>
+
     %s
 </feed>',
-            Tca::table($settings->getContentType())->getLabel(),
+            Tca::table($settings->getContentType())->getTitle(),
             GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL'),
-            substr($contentType, -11),
+            GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL'),
             date('c'),
             $this->renderEntries($entries)
         );
@@ -55,6 +55,7 @@ class ToAtomViewHelper extends AbstractToFormatViewHelper
     /**
      * @param array $entries
      * @return string
+     * @throws \TYPO3\CMS\Fluid\Core\ViewHelper\Exception\InvalidVariableException
      */
     protected function renderEntries(array $entries)
     {
@@ -74,23 +75,51 @@ class ToAtomViewHelper extends AbstractToFormatViewHelper
     }
 
     /**
-     * @param array $entry
-     * @return array
+     * @param array $item
+     * @return string
+     * @throws \UnexpectedValueException
+     * @throws \TYPO3\CMS\Fluid\Core\ViewHelper\Exception\InvalidVariableException
      */
-    protected function renderEntry(array $entry)
+    protected function renderEntry(array $item)
+    {
+        /** @var Settings $settings */
+        $settings = $this->templateVariableContainer->get('settings');
+        return sprintf(
+            '<author><name>Unknown</name></author>
+        <title>%s%s</title>
+        <id>%s/%s</id>
+        %s
+        <updated>%s</updated>
+        <content type="html"><![CDATA[%s]]></content>',
+            $settings->getContentType(),
+            empty($item['uid']) ? uniqid('title_', true) : ' (' . $item['uid'] . ')',
+            str_replace('.atom', '', GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL')),
+            empty($item['uid']) ?: $item['uid'],
+            $item['crdate'] ? '<published>' . date('c', $item['crdate']) . '</published>' : '',
+            $item['tstamp'] ? date('c', $item['tstamp']) : '',
+            $this->getList($item)
+        );
+    }
+
+    /**
+     * @param array $item
+     * @return string
+     * @throws \UnexpectedValueException
+     * @throws \TYPO3\CMS\Fluid\Core\ViewHelper\Exception\InvalidVariableException
+     */
+    protected function getList(array $item)
     {
 
-        $formattedEntry = [];
-        foreach ($entry as $key => $item) {
-            $formattedEntry[] = sprintf(
-                '<%s>%s<%s>',
-                $key,
-                $item,
-                $key
-            );
-        }
+        $list = [];
 
-        return implode("\n        ", $formattedEntry);
+        foreach ($item as $key => $value) {
+            if (!in_array($key, ['tstamp', 'uid'], true)) {
+                $list[] = $key . ': ' . $value;
+            }
+         }
+
+        return implode("\n, ", $list);
+
     }
 
     /**
