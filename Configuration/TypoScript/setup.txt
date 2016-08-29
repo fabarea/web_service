@@ -14,17 +14,23 @@ plugin.tx_webservice {
 plugin.tx_webservice {
     settings {
 
-        atom {
-            limit = 10
-        }
-
         mappings {
+
+            # Required key for a new content type
             users {
+
+                # Required value!
                 tableName = fe_users
-                limit = 500
+
+                # Tell the maximum taken by default for the list of items
+                limit = 50
+
+                # Optional default filters (not yet implemented)
                 filter =
 
+                # Protect the output with a token or a user session (not yet implemented)
                 permission {
+
                     # Possible comma separated list of Frontend User group
                     frontendUserGroup =
 
@@ -32,24 +38,39 @@ plugin.tx_webservice {
                     #token = 3ce2b796-69cd-11e6-8b77-86f30ca893d3
                 }
 
+                # The fields being display in the list.
+                # http://domain.tld/content/users
                 many {
                     fields = uid, first_name, last_name
                 }
 
+                # The fields being display in the detail.
+                # http://domain.tld/content/users/1
                 one {
                     fields = uid, first_name, last_name, usergroup
                 }
             }
 
+
             usergroups {
+
+                # Required value!
                 tableName = fe_groups
+
+                # In this example we take every fields of fe_groups excpect those ones
                 excludedFields = felogin_redirectPid, tx_extbase_type, TSconfig, lockToDomain, subgroup
 
+                # Default ordering which will override the "default_sortby" in the TCA
                 orderings {
                     title = ASC
                 }
 
             }
+        }
+
+        # Specific configuration for format "atom". In this case we really want to limit the number of items.
+        atom {
+            limit = 10
         }
     }
 }
