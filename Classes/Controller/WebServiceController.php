@@ -26,6 +26,7 @@ class WebServiceController extends ActionController
 
     /**
      * @param string $route
+     * @return string
      * @throws \Fab\Vidi\Exception\InvalidKeyInArrayException
      * @throws \InvalidArgumentException
      * @throws \RuntimeException
@@ -39,6 +40,11 @@ class WebServiceController extends ActionController
         $settings = $this->getSettingsResolver()->resolve($route);
 
         if ($settings->getContentType()) {
+
+            $isAllowed = $this->checkPermissions($settings);
+            if (!$isAllowed) {
+                return '403';
+            }
 
             $matcher = $this->getMatcher($settings);
             $order = $this->getOrder($settings);
@@ -55,19 +61,57 @@ class WebServiceController extends ActionController
 
             // Early return
             if (!$objects) {
-                return;
+                return '404';
             }
+
+            // Assign template variables.
             $this->view->assign('settings', $settings);
             $this->view->assign('objects', $objects);
             $this->view->assign('response', $this->controllerContext->getResponse());
         } else {
-            $message = sprintf('I could find a valid content type for segment "%s"', $settings->getRouteSegments()[0]);
+            $message = sprintf('I could find a valid content type for segment "%s"', $settings->getFistRouteSegment());
             throw new \RuntimeException($message, 1472294541);
         }
 
         $fileNameAndPath = 'EXT:web_service/Resources/Private/Templates/WebService/Output.' . $settings->getFormat();
         $templatePathAndFilename = GeneralUtility::getFileAbsFileName($fileNameAndPath);
         $this->view->setTemplatePathAndFilename($templatePathAndFilename);
+
+        return $this->view->render();
+    }
+
+    /**
+     * @param Settings $settings
+     * @return bool
+     */
+    protected function checkPermissions(Settings $settings)
+    {
+        // Default
+        $isAllowed = true;
+
+        // Check
+        if ($settings->getPermissionsUserGroups()) {
+            $userData = $this->getFrontendUserData();
+            $userGroups = GeneralUtility::trimExplode(',', $userData['usergroups'], true);
+
+            $isAllowed = false;
+
+            foreach ($settings->getPermissionsUserGroups() as $userGroup) {
+                if ($userGroup === '*' && $userData) {
+                    $isAllowed = true;
+                    break;
+                } else if (in_array($userGroup, $userGroups, true)) {
+                    $isAllowed = true;
+                    break;
+                }
+
+            }
+        }
+
+        if ($settings->getPermissionToken() && GeneralUtility::_GET('token') !== $settings->getPermissionToken()) {
+            $isAllowed = false;
+        }
+        return $isAllowed;
     }
 
     /**
@@ -77,7 +121,7 @@ class WebServiceController extends ActionController
      * @throws \TYPO3\CMS\Extbase\SignalSlot\Exception\InvalidSlotException
      * @throws \InvalidArgumentException
      */
-    public function getMatcher(Settings $settings)
+    protected function getMatcher(Settings $settings)
     {
 
         /** @var $matcher Matcher */
@@ -95,7 +139,7 @@ class WebServiceController extends ActionController
      * @throws \Fab\Vidi\Exception\NotExistingClassException
      * @throws \InvalidArgumentException
      */
-    public function getOrder(Settings $settings)
+    protected function getOrder(Settings $settings)
     {
         $orderings = $settings->getOrderings();
         if (!$orderings) {
@@ -135,6 +179,26 @@ class WebServiceController extends ActionController
     protected function getSignalSlotDispatcher()
     {
         return $this->objectManager->get(Dispatcher::class);
+    }
+
+    /**
+     * Returns an instance of the current Frontend User.
+     *
+     * @return \TYPO3\CMS\Frontend\Authentication\FrontendUserAuthentication
+     */
+    protected function getFrontendUser()
+    {
+        return $GLOBALS['TSFE']->fe_user;
+    }
+
+    /**
+     * Returns user data of the current Frontend User.
+     *
+     * @return array
+     */
+    protected function getFrontendUserData()
+    {
+        return $this->getFrontendUser()->user ? $this->getFrontendUser()->user : [];
     }
 
 }

@@ -29,10 +29,10 @@ plugin.tx_webservice {
                 filter =
 
                 # Protect the output with a token or a user session
-                permission {
+                permissions {
 
-                    # Possible comma separated list of Frontend User group
-                    frontendUserGroup =
+                    # Possible comma separated list of Frontend User group.
+                    frontendUserGroups = *
 
                     # Give a general uuid token to protect this data stream
                     #token = 3ce2b796-69cd-11e6-8b77-86f30ca893d3

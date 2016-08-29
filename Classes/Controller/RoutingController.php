@@ -38,7 +38,6 @@ class RoutingController
      */
     public function dispatch()
     {
-
         $this->initializeFrontend();
 
         /** @var Bootstrap $bootstrap */
@@ -100,7 +99,7 @@ class RoutingController
 
 }
 
-$output = null;
+$output = '404';
 $route = GeneralUtility::_GET('route');
 
 if ($route) {
@@ -127,10 +126,22 @@ HTML;
     }
 }
 
-if ($output) {
-    print $output;
-} else {
-    header('HTTP/1.0 404 Not Found');
+if ($output === '403') {
+    header('403 Not Found');
+    print <<<HTML
+<!DOCTYPE html>
+<html><head>
+<title>403 Forbidden</title>
+</head><body>
+<h1>403 Forbidden</h1>
+<p>You do not have access to this resource {$_SERVER['REQUEST_URI']}.</p>
+<hr>
+<address>Web Service at {$_SERVER['SERVER_NAME']}</address>
+</body></html>
+HTML;
+    exit();
+} elseif ($output === '404') {
+    header('404 Not Found');
     print <<<HTML
 <!DOCTYPE html>
 <html><head>
@@ -143,4 +154,6 @@ if ($output) {
 </body></html>
 HTML;
     exit();
+} else {
+    print $output;
 }

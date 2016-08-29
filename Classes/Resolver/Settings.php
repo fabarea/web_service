@@ -62,6 +62,16 @@ class Settings
     protected $format = 'json';
 
     /**
+     * @var array
+     */
+    protected $permissionsUserGroups = [];
+
+    /**
+     * @var string
+     */
+    protected $permissionToken = '';
+
+    /**
      * @return string
      */
     public function getContentType()
@@ -171,7 +181,7 @@ class Settings
      * @param array $routeSegments
      * @return $this
      */
-    public function setRouteSegments($routeSegments)
+    public function setRouteSegments(array $routeSegments)
     {
         $this->routeSegments = $routeSegments;
 
@@ -234,7 +244,8 @@ class Settings
      */
     public function getLastRouteSegment()
     {
-        return array_pop($this->routeSegments);
+        $routeSegments = $this->routeSegments;
+        return array_pop($routeSegments);
     }
 
     /**
@@ -242,7 +253,43 @@ class Settings
      */
     public function getFistRouteSegment()
     {
-        return array_shift($this->routeSegments);
+        return $this->routeSegments[0];
+    }
+
+    /**
+     * @return array
+     */
+    public function getPermissionsUserGroups()
+    {
+        return $this->permissionsUserGroups;
+    }
+
+    /**
+     * @param array $permissionsUserGroups
+     * @return $this
+     */
+    public function setPermissionsUserGroups($permissionsUserGroups)
+    {
+        $this->permissionsUserGroups = $permissionsUserGroups;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPermissionToken()
+    {
+        return $this->permissionToken;
+    }
+
+    /**
+     * @param string $permissionToken
+     * @return $this
+     */
+    public function setPermissionToken($permissionToken)
+    {
+        $this->permissionToken = $permissionToken;
+        return $this;
     }
 
 }

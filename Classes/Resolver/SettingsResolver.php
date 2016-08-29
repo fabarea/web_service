@@ -77,6 +77,16 @@ class SettingsResolver
                 $settings->setFields(GeneralUtility::trimExplode(',', $fieldList, true));
             }
 
+            if (array_key_exists('permissions', $mappings)) {
+                $permissions = $mappings['permissions'];
+                if (array_key_exists('frontendUserGroups', $permissions)) {
+                    $settings->setPermissionsUserGroups(GeneralUtility::trimExplode(',', $permissions['frontendUserGroups'], true));
+                }
+
+                if (array_key_exists('token', $permissions)) {
+                    $settings->setPermissionToken((string)$permissions['token']);
+                }
+            }
 
             // Override specific configuration for format output (atom, csv, ...)
             if (array_key_exists($settings->getFormat(), $this->typoscript)) {

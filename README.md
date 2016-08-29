@@ -6,8 +6,14 @@ This is an extension for TYPO3 CMS aiming to query data in a flexible way. Possi
 The URLs given as example are encoded.
 
 
-	# Return all FE users
+	# Return all FE user group
+	http://domain.tld/content/usergroups
+
+	# Return all FE users - authentication required
 	http://domain.tld/content/users
+	
+	# Return latest FE users login - authentication required
+	http://domain.tld/content/last-login
 
 	# Return one FE user with id "1"
 	http://domain.tld/content/users/1
@@ -53,10 +59,10 @@ The configuration is done via TypoScript. For a new content type you must regist
                     filter =
     
                     # Protect the output with a token or a user session
-                    permission {
+                    permissions {
     
-                        # Possible comma separated list of Frontend User group
-                        frontendUserGroup =
+                        # Possible comma separated list of Frontend User group.
+                        frontendUserGroups = *
     
                         # Give a general uuid token to protect this data stream
                         #token = 3ce2b796-69cd-11e6-8b77-86f30ca893d3
