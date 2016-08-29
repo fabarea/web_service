@@ -6,7 +6,7 @@ $EM_CONF[$_EXTKEY] = [
     'category' => 'fe',
     'author' => 'Fabien Udriot',
     'author_email' => 'fabien@ecodev.ch',
-    'state' => 'alpha',
+    'state' => 'beta',
     'version' => '0.1.0',
     'autoload' => [
         'psr-4' => ['Fab\\WebService\\' => 'Classes']
