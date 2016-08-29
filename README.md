@@ -39,22 +39,22 @@ The configuration is done via TypoScript. For a new content type you must regist
         settings {
     
             mappings {
-            
+    
                 # Required key for a new content type
                 users {
-                
+    
                     # Required value!
                     tableName = fe_users
-                    
-                    # Tell the maximum taken by default for the list of items 
+    
+                    # Tell the maximum items taken by default for the list.
                     limit = 50
-                    
+    
                     # Optional default filters (not yet implemented)
                     filter =
     
-                    # Protect the output with a token or a user session (not yet implemented)
+                    # Protect the output with a token or a user session
                     permission {
-                    
+    
                         # Possible comma separated list of Frontend User group
                         frontendUserGroup =
     
@@ -75,12 +75,24 @@ The configuration is done via TypoScript. For a new content type you must regist
                     }
                 }
     
-                
+                last-login < .users
+                last-login {
+    
+                    # Default ordering which will override the "default_sortby" in the TCA
+                    orderings {
+                        lastlogin = DESC
+                    }
+    
+                    # Tell the maximum items taken by default for the list.
+                    limit = 10
+                }
+    
+                # Stream frontend user group information
                 usergroups {
-                
+    
                     # Required value!
                     tableName = fe_groups
-                    
+    
                     # In this example we take every fields of fe_groups excpect those ones
                     excludedFields = felogin_redirectPid, tx_extbase_type, TSconfig, lockToDomain, subgroup
     

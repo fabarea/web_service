@@ -22,13 +22,13 @@ plugin.tx_webservice {
                 # Required value!
                 tableName = fe_users
 
-                # Tell the maximum taken by default for the list of items
+                # Tell the maximum items taken by default for the list.
                 limit = 50
 
                 # Optional default filters (not yet implemented)
                 filter =
 
-                # Protect the output with a token or a user session (not yet implemented)
+                # Protect the output with a token or a user session
                 permission {
 
                     # Possible comma separated list of Frontend User group
@@ -51,7 +51,19 @@ plugin.tx_webservice {
                 }
             }
 
+            last-login < .users
+            last-login {
 
+                # Default ordering which will override the "default_sortby" in the TCA
+                orderings {
+                    lastlogin = DESC
+                }
+
+                # Tell the maximum items taken by default for the list.
+                limit = 10
+            }
+
+            # Stream frontend user group information
             usergroups {
 
                 # Required value!
