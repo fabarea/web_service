@@ -47,6 +47,7 @@ class WebServiceController extends ActionController
             }
 
             $matcher = $this->getMatcher($settings);
+            $matcher = $this->applyCriteriaFromAdditionalConstraints($matcher, $settings->getFilters());
             $order = $this->getOrder($settings);
             if ($settings->getManyOrOne() === Settings::MANY) {
                 $objects = ContentRepositoryFactory::getInstance($settings->getContentType())->findBy($matcher, $order, $settings->getLimit());
@@ -112,6 +113,32 @@ class WebServiceController extends ActionController
             $isAllowed = false;
         }
         return $isAllowed;
+    }
+
+    /**
+     * @param Matcher $matcher
+     * @param array $constraints
+     * @return Matcher $matcher
+     */
+    protected function applyCriteriaFromAdditionalConstraints(Matcher $matcher, array $constraints)
+    {
+        foreach ($constraints as $constraint) {
+            // hidden feature, constraint should not starts with # which considered a commented statement
+            if (false === strpos($constraint, '#')) {
+                if (preg_match('/(.+) (>=|>|<|<=|=|like) (.+)/is', $constraint, $matches) && count($matches) === 4) {
+                    $operator = $matcher->getSupportedOperators()[strtolower(trim($matches[2]))];
+                    $operand = trim($matches[1]);
+                    $value = trim($matches[3]);
+                    $matcher->$operator($operand, $value);
+                } elseif (preg_match('/(.+) (in) (.+)/is', $constraint, $matches) && count($matches) === 4) {
+                    $operator = $matcher->getSupportedOperators()[strtolower(trim($matches[2]))];
+                    $operand = trim($matches[1]);
+                    $value = trim($matches[3]);
+                    $matcher->$operator($operand, GeneralUtility::trimExplode(',', $value, true));
+                }
+            }
+        }
+        return $matcher;
     }
 
     /**

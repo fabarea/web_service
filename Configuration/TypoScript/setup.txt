@@ -19,14 +19,18 @@ plugin.tx_webservice {
             # Required key for a new content type
             users {
 
+
                 # Required value!
                 tableName = fe_users
 
                 # Tell the maximum items taken by default for the list.
                 limit = 50
 
-                # Optional default filters (not yet implemented)
-                filter =
+                # Optional default filters
+                filters {
+                    # Possible operators = , >, >= , < , <=, like, in
+                    # 0 = usergroup IN 1,2
+                }
 
                 # Protect the output with a token or a user session
                 permissions {
@@ -78,6 +82,19 @@ plugin.tx_webservice {
                 }
 
             }
+
+            # Required key for a new content type
+            #files {
+            #   # Required value!
+            #   tableName = sys_files
+            #
+            #   # Optional default filters
+            #   filters {
+            #       # Possible operators = , >, >= , < , <=, like, in
+            #       # 0 = storage = 1
+            #       # 1 = metadata.categories IN 1,2
+            #   }
+            #}
         }
 
         # Specific configuration for format "atom". In this case we really want to limit the number of items.

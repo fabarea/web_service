@@ -66,6 +66,10 @@ class SettingsResolver
                 $settings->setLimit((int)$mappings['limit']);
             }
 
+            if (array_key_exists('filters', $mappings) && is_array($mappings['filters'])) {
+                $settings->setFilters($mappings['filters']);
+            }
+
             if ($settings->countRouteSegments() === 2) {
                 $settings->setManyOrOne(Settings::ONE);
             } else {

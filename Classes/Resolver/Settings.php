@@ -72,6 +72,11 @@ class Settings
     protected $permissionToken = '';
 
     /**
+     * @var array
+     */
+    protected $filters = [];
+
+    /**
      * @return string
      */
     public function getContentType()
@@ -289,6 +294,24 @@ class Settings
     public function setPermissionToken($permissionToken)
     {
         $this->permissionToken = $permissionToken;
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getFilters()
+    {
+        return $this->filters;
+    }
+
+    /**
+     * @param array $filters
+     * @return $this
+     */
+    public function setFilters($filters)
+    {
+        $this->filters = $filters;
         return $this;
     }
 
